@@ -1,0 +1,78 @@
+@startuml 论文组织架构图
+skinparam backgroundColor white
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 12
+skinparam defaultFontColor #000000
+skinparam ArrowColor #000000
+skinparam rectangleBorderColor #555555
+skinparam noteFontSize 11
+
+title 论文组织架构图\n基于Vue 3的游戏官网系统设计与实现——以"東方夢蝶譚"为例
+
+rectangle "**第一章 绪论**" as ch1 #DCEEFB {
+    rectangle "研究背景与意义" as ch1a #E8F4FD
+    rectangle "国内外研究现状" as ch1b #E8F4FD
+    rectangle "论文结构安排" as ch1c #E8F4FD
+}
+
+rectangle "**第二章 相关技术与理论**" as ch2 #D5E8D4 {
+    rectangle "Vue 3 + Vite\n组合式API / SFC / HMR" as ch2a #E6F2E6
+    rectangle "Node.js + Express\nRESTful API / 中间件" as ch2b #E6F2E6
+    rectangle "MySQL + JWT\n连接池 / 令牌认证" as ch2c #E6F2E6
+    rectangle "Vue Flow + Chart.js\n流程图可视化 / 数据图表" as ch2d #E6F2E6
+}
+
+rectangle "**第三章 系统需求分析与设计**" as ch3 #FFF2CC {
+    rectangle "功能需求分析\n用户管理 / 故事引擎\n管理后台 / 社区交流" as ch3a #FFF8E1
+    rectangle "系统架构设计\n前后端分离 / B/S架构\nPinia状态管理" as ch3b #FFF8E1
+    rectangle "数据库设计\n11张表 / ER图\n索引与外键约束" as ch3c #FFF8E1
+}
+
+rectangle "**第四章 系统实现与关键技术**" as ch4 #F8CECC {
+    rectangle "用户模块\n注册登录 / bcrypt加密\n头像上传 / 封禁机制" as ch4a #FDE2E2
+    rectangle "故事引擎模块\n打字机效果 / 分支叙事\nVue Flow流程图\n进度保存(UPSERT)" as ch4b #FDE2E2
+    rectangle "管理后台模块\nChart.js统计面板\n用户管理 / 内容CRUD\n三级权限控制" as ch4c #FDE2E2
+    rectangle "社区模块\n帖子发布 / 评论点赞\n全文搜索 / 置顶标记" as ch4d #FDE2E2
+}
+
+rectangle "**第五章 系统测试与优化**" as ch5 #E1D5E7 {
+    rectangle "功能测试\n29项用例 / 100%通过\n四大模块全覆盖" as ch5a #F3E8F9
+    rectangle "安全测试\nSQL注入防护 / XSS防护\n权限控制(5项用例)" as ch5b #F3E8F9
+    rectangle "性能测试\nAPI响应 1~63.8ms\n页面加载约2.8s" as ch5c #F3E8F9
+    rectangle "系统优化\n索引优化 / 连接池\n组件按需加载 / Tree Shaking" as ch5d #F3E8F9
+}
+
+rectangle "**第六章 总结与展望**" as ch6 #D5D5D5 {
+    rectangle "工作总结\n34项测试全部通过\n系统运行稳定可靠" as ch6a #E8E8E8
+    rectangle "未来展望\n移动端适配 / 可视化编辑器\n多媒体扩展 / Docker部署" as ch6b #E8E8E8
+}
+
+' 章节间连接
+ch1 -down-> ch2 : 技术基础
+ch2 -down-> ch3 : 需求驱动设计
+ch3 -down-> ch4 : 设计指导实现
+ch4 -down-> ch5 : 实现验证测试
+ch5 -down-> ch6 : 测试支撑结论
+
+' 章节内部布局
+ch1a -right-> ch1b
+ch1b -right-> ch1c
+
+ch2a -right-> ch2b
+ch2b -right-> ch2c
+ch2c -right-> ch2d
+
+ch3a -right-> ch3b
+ch3b -right-> ch3c
+
+ch4a -right-> ch4b
+ch4b -right-> ch4c
+ch4c -right-> ch4d
+
+ch5a -right-> ch5b
+ch5b -right-> ch5c
+ch5c -right-> ch5d
+
+ch6a -right-> ch6b
+
+@enduml

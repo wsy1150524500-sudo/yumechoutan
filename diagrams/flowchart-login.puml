@@ -1,0 +1,64 @@
+@startuml 用户登录流程图
+skinparam backgroundColor white
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 12
+skinparam activityDiamondFontSize 12
+
+start
+
+:用户输入用户名和密码;
+
+if (用户名或密码为空？) then (是)
+  :提示"用户名和密码不能为空";
+  stop
+else (否)
+endif
+
+:前端发送 POST /api/user/login 请求;
+
+:后端查询数据库
+SELECT ... FROM users
+WHERE username = ?;
+
+if (用户是否存在？) then (否)
+  :返回 401
+  "用户名或密码错误";
+  stop
+else (是)
+endif
+
+:bcrypt.compare
+比对密码哈希;
+
+if (密码是否正确？) then (否)
+  :返回 401
+  "用户名或密码错误";
+  stop
+else (是)
+endif
+
+if (用户是否被封禁？\nbanned_until > 当前时间) then (是)
+  :返回 403
+  提示封禁原因和解封时间;
+  stop
+else (否)
+endif
+
+:生成 JWT 令牌
+jwt.sign({id, username, isAdmin})
+有效期 7 天;
+
+:返回 token 和用户信息;
+
+:前端存储 token 到 localStorage
+Pinia Store 更新用户状态;
+
+if (是否为管理员？) then (是)
+  :跳转管理后台;
+else (否)
+  :跳转首页;
+endif
+
+stop
+
+@enduml

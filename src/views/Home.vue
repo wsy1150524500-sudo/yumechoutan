@@ -62,15 +62,17 @@
       </div>
     </div>
 
-    <!-- 主视觉区 -->
+    <!-- 主视觉区 - 视差 -->
     <section id="hero" class="hero">
-      <div class="hero-background"></div>
+      <div class="parallax-bg" ref="parallaxBg"></div>
+      <div class="parallax-stars" ref="parallaxStars"></div>
+      <div class="parallax-mid" ref="parallaxMid"></div>
       <div class="hero-content">
         <h1 class="game-title">東方夢蝶譚</h1>
         <p class="game-subtitle">在異變的世界中，尋找真相</p>
       </div>
       <div class="scroll-indicator" @click="scrollToSection('story')">
-        <span>▼</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
     </section>
 
@@ -100,44 +102,31 @@
       </div>
     </section>
 
-    <!-- 角色介绍 - 轮播式 -->
+    <!-- 角色介绍 - 卡片式切换 -->
     <section id="characters" class="characters-section">
-      <h2>角色介绍</h2>
-      <div class="character-carousel">
-        <button class="carousel-btn prev" @click="prevCharacter" :disabled="currentCharIndex === 0">
-          ‹
-        </button>
-        
-        <div class="character-display">
-          <transition name="slide" mode="out-in">
-            <div class="character-content" :key="currentCharacter.id">
-              <div class="character-image">
-                <div class="image-placeholder">
-                  {{ currentCharacter.name }}
-                </div>
-              </div>
-              <div class="character-info">
-                <h3>{{ currentCharacter.name }}</h3>
-                <p>{{ currentCharacter.description }}</p>
-              </div>
-            </div>
-          </transition>
-        </div>
-        
-        <button class="carousel-btn next" @click="nextCharacter" :disabled="currentCharIndex === characters.length - 1">
-          ›
-        </button>
-      </div>
-      
-      <div class="carousel-dots">
-        <span 
+      <h2 class="section-title-light">角色介绍</h2>
+      <div class="char-tabs">
+        <button 
           v-for="(char, index) in characters" 
           :key="char.id"
-          class="dot"
-          :class="{ active: index === currentCharIndex }"
+          class="char-tab"
+          :class="{ active: currentCharIndex === index }"
           @click="currentCharIndex = index"
-        ></span>
+        >
+          {{ char.name }}
+        </button>
       </div>
+      <transition name="char-fade" mode="out-in">
+        <div class="char-detail" :key="currentCharacter.id">
+          <div class="char-img">
+            <img :src="currentCharacter.image" :alt="currentCharacter.name" />
+          </div>
+          <div class="char-info">
+            <h3>{{ currentCharacter.name }}</h3>
+            <p>{{ currentCharacter.description }}</p>
+          </div>
+        </div>
+      </transition>
     </section>
 
     <!-- 体验剧情 -->
@@ -197,6 +186,9 @@ const currentCharIndex = ref(0)
 const showLoginModal = ref(false)
 const isLogin = ref(true)
 const userAvatar = ref('')
+const parallaxBg = ref(null)
+const parallaxStars = ref(null)
+const parallaxMid = ref(null)
 const form = ref({
   username: '',
   password: '',
@@ -214,16 +206,19 @@ const characters = [
   {
     id: 1,
     name: '魂魄妖梦',
+    image: '/img/yaomeng.png',
     description: '白玉楼的庭师兼剑术指导，半人半灵的存在。在异变中被卷入另一个世界，通过卷轴与另一个世界的自己灵魂互换。她必须在这个陌生而危险的世界中寻找真相。'
   },
   {
     id: 2,
     name: '博丽灵梦',
+    image: '/img/bllm.jpg',
     description: '博丽神社的巫女，幻想乡的异变解决者。在这个世界中受到了异变的影响，短暂恢复清醒后为妖梦指出了异变走过的路线。'
   },
   {
     id: 3,
     name: '琪露诺',
+    image: '/img/qln.jpg',
     description: '冰之妖精，在这个世界中成为了贤者，拥有着不同寻常的力量。她的分身救下了妖梦，并带领她前往人间之里，为妖梦讲述异变的情况。'
   }
 ]
@@ -298,18 +293,6 @@ const scrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId)
   if (element) {
     element.scrollIntoView({ behavior: 'smooth' })
-  }
-}
-
-const prevCharacter = () => {
-  if (currentCharIndex.value > 0) {
-    currentCharIndex.value--
-  }
-}
-
-const nextCharacter = () => {
-  if (currentCharIndex.value < characters.length - 1) {
-    currentCharIndex.value++
   }
 }
 
@@ -419,6 +402,41 @@ const handleScroll = () => {
   } else {
     isScrolled.value = false
   }
+  
+  // 视差滚动效果
+  if (scrollY < heroHeight * 1.5) {
+    if (parallaxBg.value) parallaxBg.value.style.transform = `translateY(${scrollY * 0.3}px)`
+    if (parallaxStars.value) parallaxStars.value.style.transform = `translateY(${scrollY * 0.5}px)`
+    if (parallaxMid.value) parallaxMid.value.style.transform = `translateY(${scrollY * 0.7}px)`
+  }
+}
+
+// 初始化视差粒子效果
+const initParallaxParticles = () => {
+  // 生成星星
+  if (parallaxStars.value) {
+    for (let i = 0; i < 80; i++) {
+      const star = document.createElement('div')
+      star.className = 'star'
+      star.style.left = Math.random() * 100 + '%'
+      star.style.top = Math.random() * 100 + '%'
+      star.style.animationDelay = Math.random() * 3 + 's'
+      star.style.width = star.style.height = (Math.random() * 2 + 1) + 'px'
+      parallaxStars.value.appendChild(star)
+    }
+  }
+  // 生成花瓣
+  if (parallaxMid.value) {
+    for (let i = 0; i < 15; i++) {
+      const petal = document.createElement('div')
+      petal.className = 'floating-petal'
+      petal.style.left = Math.random() * 100 + '%'
+      petal.style.top = (Math.random() * 100 + 100) + '%'
+      petal.style.animationDelay = Math.random() * 8 + 's'
+      petal.style.animationDuration = (6 + Math.random() * 6) + 's'
+      parallaxMid.value.appendChild(petal)
+    }
+  }
 }
 
 onMounted(() => {
@@ -428,6 +446,9 @@ onMounted(() => {
   
   // 检查是否需要显示登录弹窗
   checkNeedLogin()
+  
+  // 初始化视差粒子
+  initParallaxParticles()
 })
 
 onUnmounted(() => {
@@ -455,6 +476,7 @@ watch(() => route.query.needLogin, (newVal) => {
 <style scoped>
 .home {
   min-height: 100vh;
+  background: #000000;
 }
 
 /* 导航栏 */
@@ -463,7 +485,6 @@ watch(() => route.query.needLogin, (newVal) => {
   top: 0;
   left: 0;
   right: 0;
-  background: transparent;
   z-index: 1000;
   padding: 1.5rem 0;
   transition: all 0.5s ease;
@@ -472,10 +493,10 @@ watch(() => route.query.needLogin, (newVal) => {
 }
 
 .navbar.scrolled {
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(10px);
+  background: rgba(15, 15, 35, 0.95);
+  backdrop-filter: blur(12px);
   padding: 1rem 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 20px rgba(124, 58, 237, 0.2);
   opacity: 1;
   pointer-events: auto;
 }
@@ -490,44 +511,44 @@ watch(() => route.query.needLogin, (newVal) => {
 }
 
 .nav-logo {
-  color: white;
-  font-size: 1.5rem;
+  color: #ffffff;
+  font-size: 1.6rem;
   font-weight: bold;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .nav-menu {
   display: flex;
   gap: 2rem;
+  align-items: center;
 }
 
 .nav-link {
-  color: white;
+  color: rgba(226, 232, 240, 0.8);
   text-decoration: none;
-  transition: color 0.3s;
+  transition: all 0.3s;
   cursor: pointer;
-  font-size: 1rem;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  font-size: 0.95rem;
+  padding: 0.5rem 0;
 }
 
 .nav-link:hover {
-  color: #4ecdc4;
+  color: #ffffff;
 }
 
 .admin-link {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(102, 126, 234, 0.2);
+  background: rgba(124, 58, 237, 0.15);
   padding: 0.5rem 1rem;
   border-radius: 20px;
-  border: 1px solid rgba(102, 126, 234, 0.5);
+  border: 1px solid rgba(124, 58, 237, 0.4);
   transition: all 0.3s;
 }
 
 .admin-link:hover {
-  background: rgba(102, 126, 234, 0.4);
-  border-color: rgba(102, 126, 234, 0.8);
+  background: rgba(124, 58, 237, 0.3);
+  border-color: rgba(124, 58, 237, 0.7);
   color: #fff;
   transform: translateY(-2px);
 }
@@ -545,7 +566,7 @@ watch(() => route.query.needLogin, (newVal) => {
 }
 
 .user-icon:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(167, 139, 250, 0.2);
 }
 
 .user-avatar {
@@ -553,15 +574,15 @@ watch(() => route.query.needLogin, (newVal) => {
   height: 36px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(167, 139, 250, 0.6);
   transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
 }
 
 .user-avatar:hover {
-  border-color: #4ecdc4;
+  border-color: #ffffff;
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(78, 205, 196, 0.4);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
 }
 
 .user-avatar img {
@@ -570,15 +591,11 @@ watch(() => route.query.needLogin, (newVal) => {
   object-fit: cover;
 }
 
-.user-icon:hover {
-  background: rgba(78, 205, 196, 0.2);
-}
-
 .user-icon svg {
   display: block;
 }
 
-/* 主视觉区 */
+/* 主视觉区 - 视差 */
 .hero {
   height: 100vh;
   display: flex;
@@ -590,118 +607,178 @@ watch(() => route.query.needLogin, (newVal) => {
   overflow: hidden;
 }
 
-.hero-background {
+.parallax-bg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
-  background-image: url('/img/fm.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: 0;
+  height: 120%;
+  background: url('/img/fm.png') center/cover no-repeat;
+  transform: translateY(0);
+  will-change: transform;
 }
 
-.hero-background::after {
+.parallax-bg::after {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.3);
+  background: linear-gradient(180deg, rgba(15,15,35,0.3) 0%, rgba(26,10,46,0.5) 50%, rgba(15,15,35,0.9) 100%);
+}
+
+.parallax-stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120%;
+  will-change: transform;
+}
+
+.parallax-mid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120%;
+  will-change: transform;
+}
+
+:deep(.star) {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 3s infinite alternate;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+:deep(.floating-petal) {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: rgba(167, 139, 250, 0.4);
+  border-radius: 50% 0 50% 0;
+  animation: petalFloat 8s infinite linear;
+}
+
+@keyframes petalFloat {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
 }
 
 .hero-content {
   max-width: 800px;
   padding: 2rem;
   position: relative;
-  z-index: 1;
+  z-index: 10;
 }
 
 .game-title {
-  font-size: 4rem;
+  font-size: 5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #A78BFA, #7C3AED, #F43F5E);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 1rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-  animation: fadeInUp 1s ease;
+  animation: titleReveal 1.5s ease forwards;
+  letter-spacing: 0.05em;
+}
+
+@keyframes titleReveal {
+  from { opacity: 0; transform: translateY(40px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .game-subtitle {
-  font-size: 1.5rem;
-  margin-bottom: 0;
-  opacity: 0.9;
-  animation: fadeInUp 1s ease 0.2s backwards;
+  font-size: 1.4rem;
+  color: rgba(226, 232, 240, 0.7);
+  animation: subtitleReveal 1.5s ease 0.3s forwards;
+  opacity: 0;
+  letter-spacing: 0.1em;
+}
+
+@keyframes subtitleReveal {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 0.8; transform: translateY(0); }
 }
 
 .scroll-indicator {
   position: absolute;
-  bottom: 2rem;
+  bottom: 3rem;
   left: 50%;
   transform: translateX(-50%);
-  color: white;
-  font-size: 2rem;
+  color: rgba(167, 139, 250, 0.7);
   animation: bounce 2s infinite;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+  z-index: 10;
 }
 
 @keyframes bounce {
   0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(-10px); }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  50% { transform: translateX(-50%) translateY(-12px); }
 }
 
 /* 游戏简介 */
 .game-info {
-  padding: 6rem 2rem;
-  max-width: 1200px;
+  padding: 8rem 2rem;
+  max-width: 1000px;
   margin: 0 auto;
-  background: #f9f9f9;
 }
 
 .game-info h2 {
   font-size: 2.5rem;
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
   text-align: center;
-  color: #333;
+  color: #ffffff;
 }
 
 .info-content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 3rem;
+}
+
+.info-block {
+  background: rgba(167, 139, 250, 0.05);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: 16px;
+  padding: 2.5rem;
+  backdrop-filter: blur(5px);
+  transition: all 0.4s;
+}
+
+.info-block:hover {
+  border-color: rgba(167, 139, 250, 0.4);
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.1);
 }
 
 .info-block h3 {
-  font-size: 1.5rem;
-  color: #667eea;
+  font-size: 1.4rem;
+  color: #ffffff;
   margin-bottom: 1rem;
 }
 
 .info-block p {
-  line-height: 1.8;
-  font-size: 1.1rem;
-  color: #666;
+  line-height: 1.9;
+  font-size: 1.05rem;
+  color: rgba(226, 232, 240, 0.8);
 }
 
 /* 章节预览 */
 .chapters {
-  padding: 6rem 2rem;
-  max-width: 1200px;
+  padding: 8rem 2rem;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -709,182 +786,213 @@ watch(() => route.query.needLogin, (newVal) => {
   font-size: 2.5rem;
   margin-bottom: 3rem;
   text-align: center;
-  color: #333;
+  color: #ffffff;
 }
 
 .chapter-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 2rem;
 }
 
 .chapter-card {
-  padding: 2rem;
-  background: white;
+  background: rgba(15, 15, 35, 0.8);
+  border: 1px solid rgba(167, 139, 250, 0.2);
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  transition: transform 0.3s;
+  padding: 2rem;
+  transition: all 0.4s;
+  position: relative;
+  overflow: hidden;
+}
+
+.chapter-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #7C3AED, #F43F5E);
+  transform: scaleX(0);
+  transition: transform 0.4s;
+  transform-origin: left;
+}
+
+.chapter-card:hover::before {
+  transform: scaleX(1);
 }
 
 .chapter-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+  border-color: rgba(167, 139, 250, 0.5);
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.15);
 }
 
 .chapter-number {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: bold;
-  color: #667eea;
-  margin-bottom: 1rem;
+  color: #ffffff;
+  margin-bottom: 0.8rem;
 }
 
 .chapter-desc {
-  color: #666;
-  line-height: 1.6;
+  color: rgba(226, 232, 240, 0.7);
+  line-height: 1.7;
 }
 
-/* 角色介绍轮播 */
+/* 角色介绍 - 卡片式切换 */
 .characters-section {
-  min-height: 100vh;
-  padding: 6rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 8rem 2rem;
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  position: relative;
+  align-items: center;
 }
 
-.characters-section h2 {
+.characters-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(244, 63, 94, 0.05) 100%);
+}
+
+.section-title-light {
   font-size: 2.5rem;
   margin-bottom: 3rem;
   text-align: center;
-  color: white;
+  color: #ffffff;
+  position: relative;
+  z-index: 1;
 }
 
-.character-carousel {
+.char-tabs {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
+  gap: 1.2rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
 }
 
-.carousel-btn {
-  background: rgba(255,255,255,0.2);
-  border: 2px solid white;
-  color: white;
-  font-size: 3rem;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
+.char-tab {
+  background: rgba(167, 139, 250, 0.08);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  color: rgba(226, 232, 240, 0.7);
+  padding: 1rem 2rem;
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
 }
 
-.carousel-btn:hover:not(:disabled) {
-  background: rgba(255,255,255,0.4);
-  transform: scale(1.1);
+.char-tab::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #7C3AED, #F43F5E);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+  transform-origin: center;
 }
 
-.carousel-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
+.char-tab:hover {
+  background: rgba(167, 139, 250, 0.15);
+  border-color: rgba(167, 139, 250, 0.5);
+  color: #ffffff;
+  transform: translateY(-2px);
 }
 
-.character-display {
-  flex: 1;
+.char-tab.active {
+  background: rgba(124, 58, 237, 0.2);
+  border-color: #7C3AED;
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.25);
+  transform: translateY(-2px);
+}
+
+.char-tab.active::before {
+  transform: scaleX(1);
+}
+
+.char-detail {
   max-width: 800px;
-}
-
-.character-content {
+  width: 100%;
   display: flex;
-  gap: 3rem;
+  gap: 2.5rem;
   align-items: center;
-  background: rgba(255,255,255,0.1);
+  background: rgba(167, 139, 250, 0.06);
+  border: 1px solid rgba(167, 139, 250, 0.2);
   backdrop-filter: blur(10px);
   padding: 3rem;
   border-radius: 20px;
+  position: relative;
+  z-index: 1;
 }
 
-.character-image {
+.char-img {
+  width: 200px;
+  height: 280px;
   flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(244, 63, 94, 0.1));
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(167, 139, 250, 0.3);
 }
 
-.image-placeholder {
-  width: 300px;
-  height: 400px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.5rem;
-  border: 2px solid rgba(255,255,255,0.3);
+.char-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 14px;
 }
 
-.character-info {
+.char-info {
   flex: 1;
-  color: white;
 }
 
-.character-info h3 {
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
+.char-info h3 {
+  font-size: 1.8rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
 }
 
-.character-info p {
-  font-size: 1.1rem;
-  line-height: 1.8;
+.char-info p {
+  line-height: 1.9;
+  color: rgba(226, 232, 240, 0.8);
+  font-size: 1rem;
 }
 
-.carousel-dots {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 2rem;
+.char-fade-enter-active,
+.char-fade-leave-active {
+  transition: all 0.4s ease;
 }
 
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.3);
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.dot.active {
-  background: white;
-  transform: scale(1.3);
-}
-
-.slide-enter-active, .slide-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-enter-from {
+.char-fade-enter-from {
   opacity: 0;
-  transform: translateX(30px);
+  transform: translateY(15px);
 }
 
-.slide-leave-to {
+.char-fade-leave-to {
   opacity: 0;
-  transform: translateX(-30px);
+  transform: translateY(-15px);
 }
 
 /* 体验剧情 */
 .experience-section {
-  min-height: 100vh;
+  min-height: 60vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   position: relative;
   overflow: hidden;
 }
@@ -896,8 +1004,7 @@ watch(() => route.query.needLogin, (newVal) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('/img/fm.png') center/cover;
-  opacity: 0.1;
+  background: radial-gradient(ellipse at center, rgba(124, 58, 237, 0.1) 0%, transparent 60%);
   z-index: 0;
 }
 
@@ -912,22 +1019,21 @@ watch(() => route.query.needLogin, (newVal) => {
 .experience-content h2 {
   font-size: 3rem;
   margin-bottom: 1.5rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  color: white;
 }
 
 .experience-desc {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   margin-bottom: 3rem;
-  opacity: 0.9;
+  color: rgba(226, 232, 240, 0.7);
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
 }
 
 .btn-experience {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  border: 2px solid white;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(244, 63, 94, 0.2));
+  border: 2px solid #7C3AED;
   color: white;
   padding: 1.2rem 3rem;
   font-size: 1.3rem;
@@ -937,13 +1043,12 @@ watch(() => route.query.needLogin, (newVal) => {
   display: inline-flex;
   align-items: center;
   gap: 1rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .btn-experience:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.5), rgba(244, 63, 94, 0.3));
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3);
 }
 
 .btn-experience svg {
@@ -956,15 +1061,15 @@ watch(() => route.query.needLogin, (newVal) => {
 
 /* 游戏资讯 */
 .news-section {
-  padding: 6rem 2rem;
-  background: #f9f9f9;
+  padding: 8rem 2rem;
+  background: rgba(15, 15, 35, 0.5);
 }
 
 .news-section h2 {
   font-size: 2.5rem;
   margin-bottom: 3rem;
   text-align: center;
-  color: #333;
+  color: #ffffff;
 }
 
 .news-list {
@@ -972,58 +1077,63 @@ watch(() => route.query.needLogin, (newVal) => {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .news-item {
-  background: white;
-  padding: 2rem;
+  background: rgba(167, 139, 250, 0.05);
+  border: 1px solid rgba(167, 139, 250, 0.15);
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 2rem;
+  transition: all 0.3s;
+}
+
+.news-item:hover {
+  border-color: rgba(167, 139, 250, 0.4);
+  transform: translateX(5px);
 }
 
 .news-date {
-  color: #999;
-  font-size: 0.9rem;
+  color: rgba(226, 232, 240, 0.5);
+  font-size: 0.85rem;
   margin-bottom: 0.5rem;
 }
 
 .news-item h3 {
-  font-size: 1.5rem;
-  color: #333;
-  margin-bottom: 1rem;
+  color: #E2E8F0;
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
 }
 
 .news-item p {
-  color: #666;
-  line-height: 1.6;
+  color: rgba(226, 232, 240, 0.7);
+  line-height: 1.7;
 }
 
 .more-news-btn-container {
   max-width: 800px;
-  margin: 3rem auto 0;
+  margin: 2rem auto 0;
   display: flex;
   justify-content: flex-end;
 }
 
 .more-news-btn {
-  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
   color: white;
   border: none;
-  padding: 1rem 2.5rem;
-  font-size: 1.1rem;
-  border-radius: 30px;
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  border-radius: 25px;
   cursor: pointer;
+  transition: all 0.3s;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.3s;
-  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
 }
 
 .more-news-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
 }
 
 .more-news-btn .arrow {
@@ -1037,31 +1147,47 @@ watch(() => route.query.needLogin, (newVal) => {
 
 /* 页脚 */
 .footer {
-  background: #1a1a2e;
+  background: #080812;
   color: white;
   text-align: center;
   padding: 3rem 2rem;
+  border-top: 1px solid rgba(167, 139, 250, 0.1);
 }
 
 .footer p {
-  margin: 0.5rem 0;
-  opacity: 0.8;
+  margin: 0.3rem 0;
+  opacity: 0.5;
+  font-size: 0.9rem;
 }
 
 /* 响应式 */
 @media (max-width: 768px) {
   .game-title {
-    font-size: 2.5rem;
+    font-size: 3rem;
   }
   
-  .character-content {
+  .char-detail {
     flex-direction: column;
     text-align: center;
   }
   
+  .char-img {
+    width: 140px;
+    height: 200px;
+  }
+  
+  .char-tabs {
+    gap: 0.8rem;
+  }
+  
+  .char-tab {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
   .nav-menu {
     gap: 1rem;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
   
   .chapter-grid {
@@ -1076,7 +1202,7 @@ watch(() => route.query.needLogin, (newVal) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1085,10 +1211,11 @@ watch(() => route.query.needLogin, (newVal) => {
 }
 
 .modal-content {
-  background: white;
+  background: #1a1a2e;
+  border: 1px solid rgba(167, 139, 250, 0.3);
   padding: 3rem;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(124, 58, 237, 0.2);
   width: 100%;
   max-width: 400px;
   position: relative;
@@ -1102,7 +1229,7 @@ watch(() => route.query.needLogin, (newVal) => {
   background: none;
   border: none;
   font-size: 2rem;
-  color: #999;
+  color: rgba(226, 232, 240, 0.5);
   cursor: pointer;
   line-height: 1;
   padding: 0;
@@ -1114,13 +1241,13 @@ watch(() => route.query.needLogin, (newVal) => {
 }
 
 .modal-close:hover {
-  color: #333;
+  color: #ffffff;
 }
 
 .modal-content h2 {
   text-align: center;
   margin-bottom: 2rem;
-  color: #333;
+  color: #ffffff;
 }
 
 .form-group {
@@ -1130,15 +1257,23 @@ watch(() => route.query.needLogin, (newVal) => {
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #666;
+  color: rgba(226, 232, 240, 0.7);
 }
 
 .form-group input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: 8px;
   font-size: 1rem;
+  background: rgba(15, 15, 35, 0.8);
+  color: #E2E8F0;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #7C3AED;
 }
 
 .btn {
@@ -1146,28 +1281,29 @@ watch(() => route.query.needLogin, (newVal) => {
   padding: 1rem;
   font-size: 1.1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.3s;
 }
 
 .btn-primary {
-  background: #667eea;
+  background: linear-gradient(135deg, #7C3AED, #A78BFA);
   color: white;
 }
 
 .btn:hover {
-  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
 }
 
 .toggle-mode {
   text-align: center;
   margin-top: 1.5rem;
-  color: #666;
+  color: rgba(226, 232, 240, 0.6);
 }
 
 .toggle-mode a {
-  color: #667eea;
+  color: #ffffff;
   cursor: pointer;
   text-decoration: underline;
 }

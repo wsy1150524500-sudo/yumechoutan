@@ -1,0 +1,56 @@
+@startuml 系统总体架构图
+skinparam backgroundColor white
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 22
+skinparam defaultFontColor #000000
+skinparam ArrowColor #000000
+skinparam ArrowFontSize 20
+skinparam ArrowThickness 2
+
+skinparam rectangle {
+  BackgroundColor white
+  BorderColor #000000
+  FontColor #000000
+  FontSize 22
+}
+skinparam package {
+  BackgroundColor white
+  BorderColor #000000
+  FontColor #000000
+  FontSize 24
+  FontStyle bold
+}
+
+skinparam padding 2
+skinparam nodesep 10
+skinparam ranksep 15
+
+top to bottom direction
+
+package "前端层\n(Vue3+Vite+Pinia)" as FE {
+  rectangle "视图: Home / StoryMode\nProfile / Admin / Community" as v
+  rectangle "组件: StoryEngine\nFlowChart / NodePreview" as c
+  rectangle "状态: UserStore / StoryStore\n接口: Axios" as s
+  rectangle "Vue Router\nVue Flow / Chart.js" as l
+}
+
+package "通信层(RESTful API)" as COMM {
+  rectangle "HTTP/JSON\nBearer JWT认证\n/api/*" as cm
+}
+
+package "后端层\n(Node.js+Express)" as BE {
+  rectangle "路由: user / story\nadmin / community / news" as r
+  rectangle "中间件: JWT认证\n管理员校验 / Multer / CORS" as m
+  rectangle "安全: bcrypt哈希\n参数化查询防注入" as sc
+}
+
+package "数据层(MySQL 8.0)" as DB {
+  rectangle "users / chapters\nstory_nodes / choices" as d1
+  rectangle "community_posts / comments\nprogress / likes" as d2
+}
+
+FE -down-> COMM : Axios请求
+COMM -down-> BE : 路由分发
+BE -down-> DB : mysql2连接池
+
+@enduml

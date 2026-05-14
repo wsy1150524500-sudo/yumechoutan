@@ -1,0 +1,54 @@
+@startuml 故事节点交互时序图
+skinparam backgroundColor white
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 16
+skinparam defaultFontColor #000000
+skinparam ArrowColor #000000
+skinparam ArrowFontSize 14
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam sequenceLifeLineBorderColor #000000
+skinparam sequenceParticipantBackgroundColor white
+skinparam sequenceParticipantBorderColor #000000
+skinparam sequenceParticipantFontSize 16
+skinparam sequenceGroupBackgroundColor white
+skinparam sequenceGroupBorderColor #000000
+
+actor "用户" as User
+participant "前端Vue3" as FE
+participant "后端Express" as BE
+database "MySQL" as DB
+
+User -> FE : 选择章节，进入故事模式
+FE -> BE : GET /api/story/chapter/{id}/nodes
+BE -> DB : 查询节点列表及每个节点的选项
+DB --> BE : 返回nodes(含choices)
+BE --> FE : 200 {nodes}
+
+FE -> User : 渲染节点(打字机效果/立绘/背景)
+
+alt 有分支选项
+    FE -> User : 显示选项按钮
+    User -> FE : 点击某个选项
+
+    opt 已登录
+        FE -> BE : POST /api/story/choice
+        BE -> DB : INSERT INTO user_choices
+        FE -> BE : POST /api/story/progress
+        BE -> DB : INSERT ... ON DUPLICATE KEY UPDATE
+        BE --> FE : 200 保存成功
+    end
+
+    alt next_node_id存在
+        FE -> User : 跳转下一节点，继续渲染
+    else 为null
+        FE -> User : 显示章节结束画面
+    end
+
+else 无分支选项
+    FE -> User : 显示"点击继续"
+    User -> FE : 点击继续
+    FE -> User : 自动跳转下一顺序节点
+end
+
+@enduml

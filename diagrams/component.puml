@@ -1,0 +1,66 @@
+@startuml 系统组件图
+skinparam backgroundColor white
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 18
+skinparam defaultFontColor #000000
+skinparam ArrowColor #000000
+skinparam ArrowFontSize 16
+
+skinparam component {
+  BackgroundColor white
+  BorderColor #000000
+  FontColor #000000
+  FontSize 18
+}
+skinparam package {
+  BackgroundColor white
+  BorderColor #000000
+  FontColor #000000
+  FontSize 20
+  FontStyle bold
+}
+skinparam database {
+  BackgroundColor white
+  BorderColor #000000
+  FontColor #000000
+  FontSize 20
+}
+
+skinparam nodesep 20
+skinparam ranksep 30
+
+title 系统组件图
+
+package "前端 (Vue 3 + Vite)" {
+  component [视图层\nHome / StoryMode / Profile\nAdmin / Community] as views
+  component [组件层\nStoryEngine / StoryFlowChart\nNodePreview / Search / Batch] as comps
+  component [状态层 Pinia\nUserStore / StoryStore] as stores
+  component [接口层 Axios\nUser / Story / Admin / Community] as api
+  component [第三方库\nVue Flow / Chart.js / Vue Router] as libs
+}
+
+package "后端 (Node.js + Express)" {
+  component [路由层\nuser / story / admin\ncommunity / news] as routes
+  component [中间件层\nJWT认证 / 管理员验证\nMulter上传 / CORS] as mw
+  component [安全组件\nbcryptjs / jsonwebtoken] as sec
+  component [数据访问层\nmysql2连接池 / 上传配置] as dal
+}
+
+database "MySQL数据库" as db {
+  component [users / chapters\nstory_nodes / choices\ncommunity_posts\npost_comments / post_likes] as tables
+}
+
+views -down-> comps
+comps -down-> stores
+stores -down-> api
+api -down-> libs
+
+api -right-> routes : HTTP/JSON
+
+routes -down-> mw
+mw -down-> sec
+sec -down-> dal
+
+dal -right-> db : 参数化查询
+
+@enduml

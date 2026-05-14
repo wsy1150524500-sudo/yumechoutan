@@ -32,10 +32,17 @@ uploads/
 
 # Thesis documents
 论文-*.md
+biyhelunwen.txt
+
+# Standalone HTML showcase (for interview)
+东方梦蝶谭-官网展示.html
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Kiro
+.kiro/
 
 # Editor
 .vscode/*

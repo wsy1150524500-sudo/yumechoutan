@@ -1,0 +1,50 @@
+@startuml 系统测试用例总览图
+skinparam backgroundColor white
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 18
+skinparam defaultFontColor #000000
+skinparam ArrowColor #000000
+
+skinparam rectangle {
+  BackgroundColor white
+  BorderColor #000000
+  FontColor #000000
+  FontSize 18
+}
+skinparam package {
+  BackgroundColor white
+  BorderColor #000000
+  FontColor #000000
+  FontSize 20
+  FontStyle bold
+}
+
+skinparam nodesep 15
+skinparam ranksep 25
+
+top to bottom direction
+
+rectangle "系统测试 (34项用例 / 通过率100%)" as top
+
+package "功能测试 (29项)" as func {
+  rectangle "用户模块 (9项)\n注册验证 / 登录认证\n信息修改 / 邮箱校验" as u
+  rectangle "游戏引擎 (7项)\n章节加载 / 节点渲染\n进度保存 / 异常处理" as g
+  rectangle "管理后台 (7项)\n数据统计 / 用户列表\n章节管理 / 权限拦截" as a
+  rectangle "社区模块 (6项)\n发帖评论 / 点赞切换\n未登录拦截" as c
+}
+
+package "安全测试 (5项)" as sec {
+  rectangle "SQL注入防护 (2项)\n登录注入 / 注册注入\n参数化查询拦截" as s1
+  rectangle "权限控制 (3项)\n无Token / 伪造Token\n越权访问管理接口" as s2
+}
+
+package "性能测试" as perf {
+  rectangle "API响应时间\n登录63.8ms / 查询1~7ms\n每接口10次取均值" as p1
+  rectangle "页面加载性能\n首屏约2.8s\nChrome DevTools监测" as p2
+}
+
+top -down-> func
+top -down-> sec
+top -down-> perf
+
+@enduml

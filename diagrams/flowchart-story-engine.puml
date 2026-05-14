@@ -1,0 +1,77 @@
+@startuml 故事引擎节点渲染与分支跳转流程图
+skinparam backgroundColor white
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 12
+
+start
+
+:接收章节 ID
+请求该章节的节点列表;
+
+if (节点列表是否为空？) then (是)
+  :显示"暂无故事内容"提示;
+  stop
+else (否)
+endif
+
+:取第一个节点作为当前节点
+currentNode = nodes[0];
+
+repeat
+
+  :渲染当前节点
+  ——设置背景图
+  ——显示角色立绘
+  ——打字机效果逐字输出对话文本;
+
+  :等待打字机效果完成;
+
+  if (当前节点是否有分支选项？\nchoices.length > 0) then (否)
+
+    if (是否存在下一顺序节点？) then (是)
+      :currentNode = 下一顺序节点;
+    else (否)
+      :显示章节结束画面;
+      stop
+    endif
+
+  else (是)
+
+    :显示所有选项按钮;
+    :等待用户点击选项;
+    :获取用户选择的 choice 对象;
+
+    if (用户是否已登录？) then (是)
+      :调用 POST /api/story/choice
+      保存选择记录;
+      :调用 POST /api/story/progress
+      保存当前进度;
+    else (否)
+      :跳过保存;
+    endif
+
+    :获取 choice.next_node_id;
+
+    if (next_node_id 是否为 null？) then (是)
+      :显示章节结束画面;
+      stop
+    else (否)
+    endif
+
+    :在节点列表中查找
+    id === next_node_id 的节点;
+
+    if (目标节点是否存在？) then (否)
+      :显示错误提示;
+      stop
+    else (是)
+      :currentNode = 目标节点;
+    endif
+
+  endif
+
+repeat while (继续渲染) is (是)
+
+stop
+
+@enduml

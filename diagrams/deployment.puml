@@ -1,0 +1,82 @@
+@startuml 系统部署图
+skinparam backgroundColor white
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 12
+skinparam defaultFontColor #000000
+skinparam nodeFontColor #000000
+skinparam artifactFontColor #000000
+skinparam databaseFontColor #000000
+skinparam noteFontColor #000000
+skinparam nodeBackgroundColor white
+skinparam artifactBackgroundColor white
+skinparam databaseBackgroundColor white
+skinparam folderBackgroundColor white
+skinparam noteBackgroundColor white
+skinparam noteBorderColor #000000
+skinparam nodeBorderColor #000000
+skinparam artifactBorderColor #000000
+skinparam databaseBorderColor #000000
+skinparam folderBorderColor #000000
+skinparam ArrowColor #000000
+
+title 東方夢蝶譚系统部署图
+
+node "客户端" as client {
+    artifact "Chrome 浏览器" as browser
+    note right of browser
+        用户通过浏览器
+        访问系统前端页面
+    end note
+}
+
+node "应用服务器" as appserver {
+
+    node "前端服务 (端口 5173)" as frontserver {
+        artifact "Vite 开发服务器" as vite
+        artifact "Vue 3 应用" as vueapp {
+        }
+    }
+
+    node "后端服务 (端口 3000)" as backserver {
+        artifact "Node.js 运行时" as nodejs
+        artifact "Express 应用" as express {
+        }
+    }
+
+    folder "文件存储" as filestorage {
+        artifact "uploads/avatars/" as uploads
+    }
+}
+
+node "数据库服务器 (端口 3306)" as dbserver {
+    database "MySQL 8.0\n数据库: game\n字符集: utf8mb4" as mysql
+}
+
+browser -down-> vite : HTTP 请求\nhttp://localhost:5173
+vueapp -down-> express : RESTful API\nhttp://localhost:3000/api
+express -down-> mysql : SQL 查询\nmysql2 连接池\n(最大连接数: 10)
+express -right-> uploads : 文件读写\n(头像上传/访问)
+vite -[hidden]right-> backserver
+
+note bottom of mysql
+    11 张数据表
+    InnoDB 引擎
+    支持事务和外键
+end note
+
+note bottom of express
+    JWT 认证中间件
+    CORS 跨域中间件
+    Multer 文件上传
+    bcrypt 密码加密
+end note
+
+note bottom of vueapp
+    Vue Router 路由管理
+    Pinia 状态管理
+    Vue Flow 流程图
+    Chart.js 数据图表
+    Axios HTTP 客户端
+end note
+
+@enduml

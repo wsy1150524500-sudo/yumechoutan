@@ -1,0 +1,50 @@
+@startuml 社区发帖流程图
+skinparam backgroundColor white
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 12
+
+start
+
+:用户点击发帖按钮;
+
+if (用户是否已登录？) then (否)
+  :弹出登录提示
+  引导用户登录;
+  stop
+else (是)
+endif
+
+:显示发帖表单
+（标题、内容）;
+
+:用户填写并提交;
+
+if (标题或内容是否为空？) then (是)
+  :提示"标题和内容不能为空";
+  stop
+else (否)
+endif
+
+:前端发送 POST /api/community/posts
+携带 JWT Token;
+
+:后端 authenticateToken 中间件
+验证令牌;
+
+if (Token 是否有效？) then (否)
+  :返回 401
+  "未提供认证令牌";
+  stop
+else (是)
+endif
+
+:将帖子数据写入
+community_posts 表;
+
+:返回成功及帖子 ID;
+
+:前端跳转到帖子详情页;
+
+stop
+
+@enduml

@@ -1,0 +1,56 @@
+@startuml 社区发帖与互动时序图
+skinparam backgroundColor white
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 16
+skinparam defaultFontColor #000000
+skinparam ArrowColor #000000
+skinparam ArrowFontSize 14
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam sequenceLifeLineBorderColor #000000
+skinparam sequenceParticipantBackgroundColor white
+skinparam sequenceParticipantBorderColor #000000
+skinparam sequenceParticipantFontSize 16
+skinparam sequenceGroupBackgroundColor white
+skinparam sequenceGroupBorderColor #000000
+skinparam sequenceDividerBackgroundColor white
+
+actor "用户" as User
+participant "前端Vue3" as FE
+participant "后端Express" as BE
+database "MySQL" as DB
+
+== 发布帖子 ==
+
+User -> FE : 填写标题内容，点击发布
+FE -> BE : POST /api/community/posts\n携带Bearer Token
+BE -> BE : JWT验证Token
+
+alt Token无效
+    BE --> FE : 401 请先登录
+else Token有效
+    BE -> BE : 校验标题内容非空
+    BE -> DB : INSERT INTO community_posts
+    DB --> BE : 返回postId
+    BE --> FE : 200 发布成功
+    FE --> User : 跳转帖子详情页
+end
+
+== 点赞帖子 ==
+
+User -> FE : 点击点赞按钮
+FE -> BE : POST /api/community/posts/{id}/like
+BE -> DB : 查询post_likes是否已点赞
+DB --> BE : 返回结果
+
+alt 已点赞
+    BE -> DB : DELETE点赞记录, like_count-1
+    BE --> FE : 200 {liked: false}
+    FE --> User : 取消点赞状态
+else 未点赞
+    BE -> DB : INSERT点赞记录, like_count+1
+    BE --> FE : 200 {liked: true}
+    FE --> User : 显示已点赞状态
+end
+
+@enduml

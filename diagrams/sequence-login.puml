@@ -1,0 +1,47 @@
+@startuml 用户登录时序图
+skinparam backgroundColor white
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 16
+skinparam defaultFontColor #000000
+skinparam ArrowColor #000000
+skinparam ArrowFontSize 14
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam sequenceLifeLineBorderColor #000000
+skinparam sequenceParticipantBackgroundColor white
+skinparam sequenceParticipantBorderColor #000000
+skinparam sequenceParticipantFontSize 16
+skinparam sequenceGroupBackgroundColor white
+skinparam sequenceGroupBorderColor #000000
+skinparam sequenceDividerBackgroundColor white
+skinparam sequenceDividerBorderColor #000000
+
+actor "用户" as User
+participant "前端Vue3" as FE
+participant "后端Express" as BE
+database "MySQL" as DB
+
+User -> FE : 输入用户名密码，点击登录
+FE -> FE : 校验输入非空
+FE -> BE : POST /api/user/login
+BE -> DB : SELECT ... WHERE username = ?
+DB --> BE : 返回用户记录
+
+alt 用户不存在或密码错误
+    BE --> FE : 401 用户名或密码错误
+    FE --> User : 显示错误提示
+else 验证通过
+    BE -> BE : bcrypt.compare比对密码
+    BE -> BE : 检查banned_until封禁状态
+
+    alt 用户被封禁
+        BE --> FE : 403 账户已被封禁
+    else 未封禁
+        BE -> BE : jwt.sign生成Token(7天)
+        BE --> FE : 200 {token, user}
+        FE -> FE : localStorage存储Token\nPinia更新状态
+        FE --> User : 跳转首页/管理后台
+    end
+end
+
+@enduml

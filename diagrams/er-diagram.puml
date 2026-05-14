@@ -1,0 +1,168 @@
+@startuml 数据库ER图
+skinparam backgroundColor white
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 15
+skinparam defaultFontColor #000000
+skinparam ArrowColor #000000
+skinparam ArrowFontSize 13
+
+skinparam class {
+  BackgroundColor white
+  BorderColor #000000
+  FontColor #000000
+  FontSize 15
+  HeaderBackgroundColor white
+  AttributeFontSize 14
+}
+
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+title 数据库ER图 (game)
+
+' ========== 顶层：用户表、章节表、资讯表 ==========
+
+entity "用户表 users" as users {
+  * id : INT <<PK>>
+  --
+  username : VARCHAR(50) <<UNIQUE>>
+  password : VARCHAR(255)
+  email : VARCHAR(100)
+  avatar : VARCHAR(255)
+  is_admin : BOOLEAN
+  banned_until : DATETIME
+  created_at : TIMESTAMP
+}
+
+entity "章节表 chapters" as chapters {
+  * id : INT <<PK>>
+  --
+  title : VARCHAR(100)
+  description : TEXT
+  chapter_order : INT
+}
+
+entity "资讯表 news" as news {
+  * id : INT <<PK>>
+  --
+  title : VARCHAR(200)
+  content : TEXT
+  image : VARCHAR(255)
+}
+
+' 强制顶层三表同行
+users -[hidden]right-> chapters
+chapters -[hidden]right-> news
+
+' ========== 第二层：节点表、帖子表 ==========
+
+entity "故事节点表 story_nodes" as nodes {
+  * id : INT <<PK>>
+  --
+  chapter_id : INT <<FK>>
+  node_key : VARCHAR(50) <<UNIQUE>>
+  character_name : VARCHAR(50)
+  dialogue_text : TEXT
+  node_order : INT
+}
+
+entity "帖子表 community_posts" as posts {
+  * id : INT <<PK>>
+  --
+  user_id : INT <<FK>>
+  title : VARCHAR(200)
+  content : TEXT
+  view_count : INT
+  like_count : INT
+  comment_count : INT
+  is_pinned : BOOLEAN
+  is_official : BOOLEAN
+  <<FULLTEXT: title + content>>
+}
+
+' ========== 第三层：选项表、进度表、选择表 ==========
+
+entity "选项表 choices" as choices {
+  * id : INT <<PK>>
+  --
+  node_id : INT <<FK>>
+  choice_text : VARCHAR(255)
+  next_node_id : INT
+  choice_order : INT
+}
+
+entity "用户进度表 user_progress" as progress {
+  * id : INT <<PK>>
+  --
+  user_id : INT <<FK>>
+  chapter_id : INT <<FK>>
+  current_node_id : INT <<FK>>
+  last_played : TIMESTAMP
+  <<UK: user_id + chapter_id>>
+}
+
+entity "用户选择表 user_choices" as uchoices {
+  * id : INT <<PK>>
+  --
+  user_id : INT <<FK>>
+  node_id : INT <<FK>>
+  choice_id : INT <<FK>>
+  created_at : TIMESTAMP
+}
+
+' ========== 底层：评论表、帖子点赞表、评论点赞表 ==========
+
+entity "评论表 post_comments" as comments {
+  * id : INT <<PK>>
+  --
+  post_id : INT <<FK>>
+  user_id : INT <<FK>>
+  content : TEXT
+  like_count : INT
+}
+
+entity "帖子点赞表 post_likes" as plikes {
+  * id : INT <<PK>>
+  --
+  post_id : INT <<FK>>
+  user_id : INT <<FK>>
+  <<UK: post_id + user_id>>
+}
+
+entity "评论点赞表 comment_likes" as clikes {
+  * id : INT <<PK>>
+  --
+  comment_id : INT <<FK>>
+  user_id : INT <<FK>>
+  <<UK: comment_id + user_id>>
+}
+
+' 强制底层三表同行
+comments -[hidden]right-> plikes
+plikes -[hidden]right-> clikes
+
+' ========== 关系连线 ==========
+
+' 故事系统
+chapters ||--o{ nodes : 1:N
+nodes ||--o{ choices : 1:N
+
+' 用户行为
+users ||--o{ progress : 1:N
+chapters ||--o{ progress : 1:N
+nodes ||--o{ progress : 1:N
+users ||--o{ uchoices : 1:N
+nodes ||--o{ uchoices : 1:N
+choices ||--o{ uchoices : 1:N
+
+' 社区系统
+users ||--o{ posts : 1:N
+posts ||--o{ comments : 1:N
+users ||--o{ comments : 1:N
+posts ||--o{ plikes : 1:N
+users ||--o{ plikes : 1:N
+comments ||--o{ clikes : 1:N
+users ||--o{ clikes : 1:N
+
+@enduml
