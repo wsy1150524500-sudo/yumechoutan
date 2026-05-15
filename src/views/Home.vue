@@ -616,6 +616,7 @@ watch(() => route.query.needLogin, (newVal) => {
   background: url('/img/fm.png') center/cover no-repeat;
   transform: translateY(0);
   will-change: transform;
+  pointer-events: none;
 }
 
 .parallax-bg::after {
@@ -626,6 +627,7 @@ watch(() => route.query.needLogin, (newVal) => {
   width: 100%;
   height: 100%;
   background: linear-gradient(180deg, rgba(15,15,35,0.3) 0%, rgba(26,10,46,0.5) 50%, rgba(15,15,35,0.9) 100%);
+  pointer-events: none;
 }
 
 .parallax-stars {
@@ -635,6 +637,7 @@ watch(() => route.query.needLogin, (newVal) => {
   width: 100%;
   height: 120%;
   will-change: transform;
+  pointer-events: none;
 }
 
 .parallax-mid {
@@ -644,6 +647,7 @@ watch(() => route.query.needLogin, (newVal) => {
   width: 100%;
   height: 120%;
   will-change: transform;
+  pointer-events: none;
 }
 
 :deep(.star) {
@@ -857,6 +861,7 @@ watch(() => route.query.needLogin, (newVal) => {
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(244, 63, 94, 0.05) 100%);
+  pointer-events: none;
 }
 
 .section-title-light {
@@ -1006,6 +1011,7 @@ watch(() => route.query.needLogin, (newVal) => {
   bottom: 0;
   background: radial-gradient(ellipse at center, rgba(124, 58, 237, 0.1) 0%, transparent 60%);
   z-index: 0;
+  pointer-events: none;
 }
 
 .experience-content {
